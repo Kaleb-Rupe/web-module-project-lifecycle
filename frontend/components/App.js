@@ -8,6 +8,7 @@ export default class App extends React.Component {
     todos: [],
     error: "",
     todoNameInput: "",
+    displayCompleted: true,
   };
 
   onTodoNameInputChange = (evt) => {
@@ -50,6 +51,28 @@ export default class App extends React.Component {
       .catch(this.setAxiosResponseError);
   };
 
+  toggleCompleted = (id) => (evt) => {
+    axios
+      .patch(`${URL}/${id}`)
+      .then((res) => {
+        this.setState({
+          ...this.state,
+          todos: this.state.todos.map((td) => {
+            if (td.id !== id) return td;
+            return res.data.data;
+          }),
+        });
+      })
+      .catch((err) => {});
+  };
+
+  toggleDisplayCompleted = () => {
+    this.setState({
+      ...this.state,
+      displayCompleted: !this.state.displayCompleted,
+    });
+  };
+
   componentDidMount() {
     this.fetchAllTodos();
   }
@@ -60,9 +83,15 @@ export default class App extends React.Component {
         <div id="error">Error: {this.state.error}</div>
         <div id="todos">
           <h2>Todo:</h2>
-          {this.state.todos.map((td) => {
-            return <div key={td.id}>{td.name}</div>;
-          })}
+          {this.state.todos.reduce((acc, td) => {
+            if (this.state.displayCompleted || !td.completed)
+              return acc.concat(
+                <div onClick={this.toggleCompleted(td.id)} key={td.id}>
+                  {td.name} {td.completed ? " ✔️" : ""}{" "}
+                </div>
+              );
+            return acc;
+          }, [])}
         </div>
         <form id="todoForm" onSubmit={this.onTodoFormSubmit}>
           <input
@@ -72,8 +101,10 @@ export default class App extends React.Component {
             placeholder="Type todo"
           ></input>
           <input type="submit"></input>
-          <button>Clear Completed</button>
         </form>
+        <button onClick={this.toggleDisplayCompleted}>
+          {this.state.displayCompleted ? "Hide" : "Show"} Completed
+        </button>
       </>
     );
   }
