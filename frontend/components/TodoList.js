@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { Component } from "react";
 
-export default class TodoList extends React.Component {
+export default class TodoList extends Component {
   render() {
-    return null
+    return null;
   }
 }
